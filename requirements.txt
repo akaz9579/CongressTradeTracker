@@ -3,4 +3,5 @@ bs4
 pandas
 groq
 kaggle
+kagglehub
 selenium

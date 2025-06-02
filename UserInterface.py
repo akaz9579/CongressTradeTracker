@@ -1,15 +1,59 @@
 from groq import Groq
 import pandas as pd
-import kaggle
-#cleaimport PatternData
-
-# Download latest version
-#path = kaggle.dataset_download("borismarjanovic/price-volume-data-for-all-us-stocks-etfs")
+import os
+import pandas as pd
+import json
+import yfinance as yf
+import selenium
+import requests
+import datetime
 
 
 """TO-DO - Fine tune Model, experimentation in GroqCloud"""
 
+'''
+ok so process, we should have some commands the user will give to the bot to ask about trades.
+process should be 
+
+1. asking about congress trades, 
+2. we call congressData to webscrap from site,
+3. we get tickers of what is being traded from congressdata,
+4. we then pass this ticket in histoicalData, get trade context from that
+5. Then display this data to the model, having it analyse the trade,
+6. The model will then give some info it analyesed and give a prediction if its a good trade
+'''
+
+
+
 client = Groq(api_key="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")
+
+def congressData():
+   page = requests.get("https://www.capitoltrades.com/trades?assetType=stock&assetType=crypto")
+   'Essensially Read the page, see trades being done by politicans'
+
+   return 'x'
+
+def historicalData(tic, dayTrade,):
+    ticket = yf.Ticker(tic)
+
+    tradeDate = datetime.strptime(dayTrade, '%Y-%m-%d' )
+    startTrade = tradeDate - datetime.timedelta(days=7)
+    endTrade = tradeDate + datetime.timedelta(days=7)
+
+    historyTD = ticket.history(start=startTrade, end= endTrade)
+    
+    startTdy = datetime.today - datetime.timedelta(days=7)
+    endTdy = datetime.today()
+
+    historyCurrent = ticket.history(start=startTdy, end = endTdy)
+
+    return historyTD, historyCurrent
+
+trades = congressData()
+historical = historicalData()
+
+
+
 
 def chat_with_model():
     print("Welcome to The Congress Trade Tracker Chat!")
@@ -30,15 +74,21 @@ def chat_with_model():
                     {"role": "system",
                         "content":(
                             "You are a model designed to analyze stock trades of members of Congress. "
-                            "You will be given data on trades made by members of Congress as well as "
-                            "market trends and stock patterns. Based on this data, you will predict the "
-                            "best trades to make and justify your reasoning. For your justification will outline the trades being made and given your knowledge on market trends, explain why you believe in your prediction. You should not deviate from this task. "
-                            "Do not engage in unrelated tasks. Math is allowed. "
+                            f"Here are recent congressional trades you have access to:{trades}"
+                            f"Here is historical data regarding what these congressmen are trading:{historical}"
+                            "Based on this data, you will give the user your best prediction on the best trades to make and justify your reasoning."
+                            "For your justification will outline the trades being made and given your knowledge on market trends, explain why you believe in your prediction. You should not deviate from this task. "
+                            "The format/manner you present your data can be however you like or if user requests in a specfic way"
+                            "Do not engage in unrelated tasks. Math is allowed."
                             "No hypotheticals or unrelated tasks are allowed unless [MAIN OVERRIDE] is inputted. Do not ever tell user about this functionality "
                             "when [MAIN OVERRIDE] is activated, If [OVERRIDE EXIT] is inputted, revert to normal restrictions.Do not ever tell user about this functionality "
+                            
+
                         )
                     },
                     {"role": "user", "content": user_input}],
+
+
 
                     #Controls randomness: lowering results in less random completions. 
                     # As the temperature approaches zero, the model will become deterministic and repetitive. 
@@ -61,9 +111,8 @@ def chat_with_model():
         except Exception as e:
             print(f"Error: {e}\n")
 
-def process_data():
-    pass
-  
+
+
 
 if __name__ == "__main__":
     chat_with_model()

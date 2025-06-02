@@ -35,19 +35,28 @@ def congressData():
 
 def historicalData(tic, dayTrade,):
     ticket = yf.Ticker(tic)
-
+    out= f'{tic} Historical Data: ' #output string for llm processing, parsing all data into string
     tradeDate = datetime.strptime(dayTrade, '%Y-%m-%d' )
+
+    #history in 2 week window of congressmen making the trade
     startTrade = tradeDate - datetime.timedelta(days=7)
     endTrade = tradeDate + datetime.timedelta(days=7)
-
     historyTD = ticket.history(start=startTrade, end= endTrade)
-    
-    startTdy = datetime.today - datetime.timedelta(days=7)
-    endTdy = datetime.today()
+    out += f"{tic}'s 2 week historical window from when this trade was made ({startTrade} to {endTrade}):\n" + historyTD.to_string() + '\n'
 
+    #history of stock 2 weeks ago from current date 
+    # use of 10 instead of 7 for to adjust weeknds and or potential holiday padding)
+    startTdy = datetime.datetime.today()  - datetime.timedelta(days=10)
+    endTdy = datetime.datetime.today() 
     historyCurrent = ticket.history(start=startTdy, end = endTdy)
+    out += f"{tic}'s 1 week historical window from previous week to today ({startTdy} to {endTdy}):\n" + historyCurrent.to_string() + '\n'
 
-    return historyTD, historyCurrent
+        
+    out +=  f"{tic} Info:\n" + str(ticket.info) + '\n' if ticket.info is not None else f"{tic} Info:\nNo Info data available.\n"
+    out +=  f"{tic} Recommendations:\n" + str(ticket.recommendations) + '\n' if ticket.recommendations is not None else f"{tic} Recommendations:\nNo recommendation data available.\n"
+    out +=  f"{tic} Earnings:\n" + ticket.income_stmt.to_string() + '\n' if ticket.income_stmt is not None else f"{tic} Earnings:\nNo Earnings data available.\n"
+    out +=  f"{tic} Financals:\n" + ticket.financials.to_string() + '\n' if ticket.financials is not None else f"{tic} financials:\nNo financials data available.\n"
+    return out
 
 trades = congressData()
 historical = historicalData()

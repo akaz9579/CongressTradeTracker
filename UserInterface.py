@@ -1,12 +1,11 @@
 from groq import Groq
 import pandas as pd
-import os
 import pandas as pd
-import json
 import yfinance as yf
-import selenium
-import requests
 import datetime
+import bs4
+import time 
+from playwright.sync_api import sync_playwright
 
 
 """TO-DO - Fine tune Model, experimentation in GroqCloud"""
@@ -28,10 +27,28 @@ process should be
 client = Groq(api_key="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")
 
 def congressData():
-   page = requests.get("https://www.capitoltrades.com/trades?assetType=stock&assetType=crypto")
-   'Essensially Read the page, see trades being done by politicans'
+    'Essensially Read the page, see trades being done by politicans'
+    url = 'https://www.capitoltrades.com/trades?assetType=stock&assetType=crypto&assetType=etf&page=1&txDate=365d'
+    
+    pW = sync_playwright().start()
+    browser = pW.chromium.launch(headless=False)
 
-   return 'x'
+    page = browser.new_page(
+        java_script_enabled= True,
+        viewport={'width': 1920, 'height': 1000}
+    )
+
+    page.goto(url, wait_until='load')
+
+
+    time.sleep(10)
+
+    page.close()
+    browser.close()
+    pW.stop()
+
+
+    return 'x'
 
 def historicalData(tic, dayTrade,):
     ticket = yf.Ticker(tic)
@@ -60,6 +77,10 @@ def historicalData(tic, dayTrade,):
 
 trades = congressData()
 historical = historicalData()
+
+
+
+
 
 
 

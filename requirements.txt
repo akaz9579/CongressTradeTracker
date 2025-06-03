@@ -1,7 +1,6 @@
-requests 
-bs4 
-pandas
-groq
-kaggle
-kagglehub
-selenium
+groq 
+yfinance 
+datetime
+playwright
+python
+python-dotenv
